@@ -119,7 +119,7 @@ export const dummyGenerations = [
         id: 'gen_6',
         aspectRatio: '1:1',
         productDescription: 'Modern Wireless Headphones',
-        productName: 'Headphones',
+        productName: 'Headphones 2',
         targetLength: 8,
         uploadedImages: [product4, model2],
         userId: 'user_2',
