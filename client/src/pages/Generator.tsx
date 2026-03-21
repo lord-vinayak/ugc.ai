@@ -8,6 +8,7 @@ import { RectangleHorizontalIcon, RectangleVerticalIcon } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Spinner } from "../components/ui/spinner";
 import AiButton from "../components/ai-button";
+import { motion } from "framer-motion";
 
 const Generator = () => {
   const [name, setName] = useState("");
@@ -39,7 +40,18 @@ const Generator = () => {
 
         <div className="flex gap-20 max-sm:flex-col items-start justify-between max-sm:gap-8">
           {/* left col */}
-          <div className="flex flex-col w-full sm:max-w-64 gap-8 mt-8 mb-12 sm:mb-4">
+
+          <motion.div
+            className="flex flex-col w-full sm:max-w-64 gap-8 mt-8 mb-12 sm:mb-4"
+            initial={{ y: 60, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{
+              type: "spring",
+              stiffness: 250,
+              damping: 70,
+              mass: 1,
+            }}>
             <ImageUploadDemo
               label="Product Image"
               file={productImage}
@@ -54,9 +66,10 @@ const Generator = () => {
               onChange={(e) => handleFileChange(e, "model")}
               UploadTitle="Background Image"
             />
-          </div>
+          </motion.div>
 
           {/* right col */}
+          <motion.a></motion.a>
           <div className="w-full">
             <div className="mb-4 text-gray-300">
               <Label className="block text-sm mb-4" htmlFor="name">

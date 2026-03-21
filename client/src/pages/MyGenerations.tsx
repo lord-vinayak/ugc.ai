@@ -28,6 +28,7 @@ const MyGenerations = () => {
     videoUrl: project.generatedVideo || "",
     uploadedImages: project.uploadedImages || [],
     aspectRatio: project.aspectRatio,
+    isPublished: project.isPublished,
   }));
 
   return loading ? (

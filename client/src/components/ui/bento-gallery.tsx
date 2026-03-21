@@ -9,12 +9,14 @@ import {
 } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
+  Ban,
   Ellipsis,
   Film,
   ImageDownIcon,
   InfoIcon,
   Share2Icon,
   Trash2Icon,
+  Upload,
   X,
 } from "lucide-react";
 import {
@@ -39,6 +41,7 @@ type GalleryItem = {
   videoUrl?: string;
   aspectRatio?: string; // '16:9' (vertical card) | '9:16' (horizontal card)
   uploadedImages?: string[]; // Array of image URLs uploaded by the user
+  isPublished?: boolean; // Whether the item is published or not
 };
 
 interface BentoGalleryProps {
@@ -168,14 +171,14 @@ const GalleryCard = ({
               <Ellipsis className="size-5 text-white/80" />
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="bg-black/80 backdrop-blur-sm border border-white/20 z-10 min-w-max">
+            <DropdownMenuContent className="bg-black/90 backdrop-blur-md border border-white/20 z-10 min-w-max text-white [&_.bg-accent]:bg-white/20">
               <DropdownMenuGroup>
                 <DropdownMenuItem>
                   <span className="flex items-center gap-2">
                     <ImageDownIcon size={14} />{" "}
                     {item.imageUrl && (
                       <a href={item.imageUrl} download>
-                        Download Image
+                        Download image
                       </a>
                     )}
                   </span>
@@ -185,13 +188,13 @@ const GalleryCard = ({
                     <Film size={14} />{" "}
                     {item.videoUrl && (
                       <a href={item.videoUrl} download>
-                        Download Video
+                        Download video
                       </a>
                     )}
                   </span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-2 cursor-pointer">
                     <Share2Icon size={14} />
                     {(item.videoUrl || item.imageUrl) && (
                       <a
@@ -207,8 +210,8 @@ const GalleryCard = ({
                     )}
                   </span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span className="flex items-center gap-2">
+                <DropdownMenuItem variant="destructive">
+                  <span className="flex items-center gap-2 text-red-500">
                     <Trash2Icon size={14} />
                     <a href="#">Delete</a>
                   </span>
@@ -219,12 +222,24 @@ const GalleryCard = ({
               <DropdownMenuGroup>
                 <DropdownMenuItem>
                   <span
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 cursor-pointer"
                     onClick={() => {
                       navigate(`/result/${item.id}`);
                       scrollTo(0, 0);
                     }}>
-                    <InfoIcon size={14} /> View Details
+                    <InfoIcon size={14} /> View details
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <span
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => togglePublish(item.id)}>
+                    {item.isPublished ? (
+                      <Ban size={14} />
+                    ) : (
+                      <Upload size={14} />
+                    )}
+                    {item.isPublished ? "Unpublish" : "Publish"}
                   </span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -265,6 +280,11 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const targetRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const togglePublish = (id: number | string) => {
+    // TODO: Implement toggle publish logic
+    console.log("Toggle publish for item:", id);
+  };
 
   // Separate items by aspect ratio
   // 9:16 = tall/portrait cards, 16:9 = wide/landscape cards
@@ -314,7 +334,7 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
   const y = useTransform(scrollYProgress, [0, 0.2], [30, 0]);
 
   return (
-    <section ref={targetRef} className="mt-20 mb-12 relative w-full py-12">
+    <section ref={targetRef} className="mt-12 mb-12 relative w-full py-12">
       {(title || description) && (
         <motion.div style={{ opacity, y }} className="px-4 text-center mb-12">
           {title && (
