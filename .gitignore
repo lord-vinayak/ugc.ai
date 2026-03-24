@@ -25,4 +25,7 @@ dist-ssr
 
 
 dw-client/
+dw-server/
 *.zip
+
+
