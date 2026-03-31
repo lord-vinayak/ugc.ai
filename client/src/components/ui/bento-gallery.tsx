@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   motion,
   useScroll,
@@ -24,14 +24,12 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../animate-ui/components/radix/dropdown-menu";
+import { useAuth } from "@clerk/react";
+import toast from "react-hot-toast";
+import api from "../../configs/axios";
 
 type GalleryItem = {
   id: number | string;
@@ -49,6 +47,8 @@ interface BentoGalleryProps {
   title?: string;
   description?: string;
   myGenerations?: boolean;
+  onDeleteItem?: (id: number | string) => void;
+  onPublishToggle?: (id: number | string, isPublished: boolean) => void;
 }
 
 const containerVariants = {
@@ -120,17 +120,21 @@ const VideoModal = ({
 const GalleryCard = ({
   item,
   onClick,
+  onTogglePublish,
+  onDelete,
   myGenerations,
 }: {
   item: GalleryItem;
   onClick: (item: GalleryItem) => void;
+  onTogglePublish?: (id: number | string) => void;
+  onDelete?: (id: number | string) => void;
   myGenerations?: boolean;
 }) => {
   const navigate = useNavigate();
   return (
     <motion.div
       variants={itemVariants}
-      className="group relative w-full h-full cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-white/5 shadow-sm transition-shadow duration-300 ease-in-out hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+      className="group relative w-full h-full cursor-pointer overflow-hidden rounded-2xl glass-panel transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       whileHover={{ scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       onClick={() => onClick(item)}
@@ -213,7 +217,9 @@ const GalleryCard = ({
                 <DropdownMenuItem variant="destructive">
                   <span className="flex items-center gap-2 text-red-500">
                     <Trash2Icon size={14} />
-                    <a href="#">Delete</a>
+                    <button onClick={() => onDelete && onDelete(item.id)}>
+                      Delete
+                    </button>
                   </span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -233,7 +239,7 @@ const GalleryCard = ({
                 <DropdownMenuItem>
                   <span
                     className="flex items-center gap-2 cursor-pointer"
-                    onClick={() => togglePublish(item.id)}>
+                    onClick={() => onTogglePublish && onTogglePublish(item.id)}>
                     {item.isPublished ? (
                       <Ban size={14} />
                     ) : (
@@ -250,7 +256,7 @@ const GalleryCard = ({
 
       <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       <div className="absolute bottom-0 left-0 right-0 p-4 z-10 translate-y-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
-        <h3 className="text-base font-bold text-white leading-tight">
+        <h3 className="text-base font-bold text-white leading-tight mt-8">
           {item.title}
         </h3>
         <p className="mt-1 text-xs text-white/80 line-clamp-2">{item.desc}</p>
@@ -276,20 +282,71 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
   title,
   description,
   myGenerations = false,
+  onDeleteItem,
+  onPublishToggle,
 }) => {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(items);
   const targetRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  const { getToken } = useAuth();
 
-  const togglePublish = (id: number | string) => {
-    // TODO: Implement toggle publish logic
-    console.log("Toggle publish for item:", id);
+  useEffect(() => {
+    setGalleryItems(items);
+  }, [items]);
+
+  const handleDelete = async (id: number | string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this project?",
+    );
+    if (!confirmed) return;
+
+    try {
+      const token = await getToken();
+      const { data } = await api.delete(`/api/project/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setGalleryItems((prev) =>
+        prev.filter((item) => String(item.id) !== String(id)),
+      );
+
+      onDeleteItem?.(id);
+      toast.success(data.message);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message);
+      console.log(error);
+    }
+  };
+
+  const togglePublish = async (projectId: number | string) => {
+    try {
+      const token = await getToken();
+      const { data } = await api.get(`/api/user/publish/${projectId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setGalleryItems((prev) =>
+        prev.map((item) =>
+          String(item.id) === String(projectId)
+            ? { ...item, isPublished: data.isPublished }
+            : item,
+        ),
+      );
+
+      onPublishToggle?.(projectId, data.isPublished);
+      toast.success(
+        data.isPublished ? "Project published" : "Project unpublished",
+      );
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error.message);
+      console.log(error);
+    }
   };
 
   // Separate items by aspect ratio
   // 9:16 = tall/portrait cards, 16:9 = wide/landscape cards
-  const vQueue = items.filter((i) => i.aspectRatio === "9:16");
-  const hQueue = items.filter(
+  const vQueue = galleryItems.filter((i) => i.aspectRatio === "9:16");
+  const hQueue = galleryItems.filter(
     (i) => i.aspectRatio === "16:9" || i.aspectRatio === "1:1",
   );
 
@@ -336,14 +393,14 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
   return (
     <section ref={targetRef} className="mt-12 mb-12 relative w-full py-12">
       {(title || description) && (
-        <motion.div style={{ opacity, y }} className="px-4 text-center mb-12">
+        <motion.div style={{ opacity, y }} className="px-4 text-center mb-16">
           {title && (
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white/90">
               {title}
             </h2>
           )}
           {description && (
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-400">
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-400 font-light tracking-wide">
               {description}
             </p>
           )}
@@ -364,6 +421,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                   <GalleryCard
                     item={row.v}
                     onClick={setSelectedItem}
+                    onDelete={handleDelete}
+                    onTogglePublish={togglePublish}
                     myGenerations={myGenerations}
                   />
                 </div>
@@ -372,6 +431,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                     <GalleryCard
                       item={row.h1}
                       onClick={setSelectedItem}
+                      onDelete={handleDelete}
+                      onTogglePublish={togglePublish}
                       myGenerations={myGenerations}
                     />
                   </div>
@@ -379,6 +440,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                     <GalleryCard
                       item={row.h2}
                       onClick={setSelectedItem}
+                      onDelete={handleDelete}
+                      onTogglePublish={togglePublish}
                       myGenerations={myGenerations}
                     />
                   </div>
@@ -392,6 +455,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                     <GalleryCard
                       item={row.h1}
                       onClick={setSelectedItem}
+                      onDelete={handleDelete}
+                      onTogglePublish={togglePublish}
                       myGenerations={myGenerations}
                     />
                   </div>
@@ -399,6 +464,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                     <GalleryCard
                       item={row.h2}
                       onClick={setSelectedItem}
+                      onDelete={handleDelete}
+                      onTogglePublish={togglePublish}
                       myGenerations={myGenerations}
                     />
                   </div>
@@ -407,6 +474,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                   <GalleryCard
                     item={row.v}
                     onClick={setSelectedItem}
+                    onDelete={handleDelete}
+                    onTogglePublish={togglePublish}
                     myGenerations={myGenerations}
                   />
                 </div>
@@ -418,6 +487,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                   <GalleryCard
                     item={row.v1}
                     onClick={setSelectedItem}
+                    onTogglePublish={togglePublish}
+                    onDelete={handleDelete}
                     myGenerations={myGenerations}
                   />
                 </div>
@@ -425,6 +496,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                   <GalleryCard
                     item={row.v2}
                     onClick={setSelectedItem}
+                    onTogglePublish={togglePublish}
+                    onDelete={handleDelete}
                     myGenerations={myGenerations}
                   />
                 </div>
@@ -436,6 +509,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                   <GalleryCard
                     item={row.v}
                     onClick={setSelectedItem}
+                    onTogglePublish={togglePublish}
+                    onDelete={handleDelete}
                     myGenerations={myGenerations}
                   />
                 </div>
@@ -444,6 +519,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                     <GalleryCard
                       item={row.h}
                       onClick={setSelectedItem}
+                      onTogglePublish={togglePublish}
+                      onDelete={handleDelete}
                       myGenerations={myGenerations}
                     />
                   </div>
@@ -456,6 +533,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                   <GalleryCard
                     item={row.h1}
                     onClick={setSelectedItem}
+                    onTogglePublish={togglePublish}
+                    onDelete={handleDelete}
                     myGenerations={myGenerations}
                   />
                 </div>
@@ -464,6 +543,8 @@ const BentoGallery: React.FC<BentoGalleryProps> = ({
                     <GalleryCard
                       item={row.h2}
                       onClick={setSelectedItem}
+                      onDelete={handleDelete}
+                      onTogglePublish={togglePublish}
                       myGenerations={myGenerations}
                     />
                   </div>
