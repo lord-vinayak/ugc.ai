@@ -12,7 +12,7 @@ export default function Faq() {
 
                 <Title
                     title="FAQ"
-                    heading="Frequently asked questions"
+                    heading="Clear Answers"
                     description="Everything you need to know about using the platform. If you have any questions, feel free to contact us."
                 />
 
@@ -33,15 +33,15 @@ export default function Faq() {
                                     card.classList.add("transition", "duration-300");
                                 }
                             }}
-                            className="group bg-white/6 rounded-xl select-none"
+                            className="group glass-panel rounded-2xl select-none mb-4 overflow-hidden border border-white/10 transition-all hover:bg-white/10 hover:border-white/20"
                         >
-                            <summary className="flex items-center justify-between p-4 cursor-pointer">
-                                <h4 className="font-medium">{faq.question}</h4>
-                                <ChevronDownIcon className="w-5 h-5 text-gray-300 group-open:rotate-180 transition-transform" />
+                            <summary className="flex items-center justify-between p-6 cursor-pointer outline-none">
+                                <h4 className="font-semibold text-lg tracking-wide">{faq.question}</h4>
+                                <ChevronDownIcon className="w-5 h-5 text-primary group-open:rotate-180 transition-transform duration-300" />
                             </summary>
-                            <p className="p-4 pt-0 text-sm text-gray-300 leading-relaxed">
-                                {faq.answer}
-                            </p>
+                            <div className="p-6 pt-0 text-gray-400 leading-relaxed border-t border-white/5 mt-2">
+                                <p className="pt-4">{faq.answer}</p>
+                            </div>
                         </motion.details>
                     ))}
                 </div>

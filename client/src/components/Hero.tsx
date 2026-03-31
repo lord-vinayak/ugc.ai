@@ -1,4 +1,4 @@
-import { ArrowRightIcon, PlayIcon, ZapIcon, CheckIcon } from "lucide-react";
+import { ArrowRightIcon, PlayIcon } from "lucide-react";
 import { PrimaryButton, GhostButton } from "./Buttons";
 import { motion } from "framer-motion";
 
@@ -26,10 +26,17 @@ export default function Hero() {
         'Webflow'
     ];
 
-  return (
-    <>
-      <section id="home" className="relative z-10">
-        <div className="max-w-6xl mx-auto px-4 min-h-screen max-md:w-screen max-md:overflow-hidden pt-32 md:pt-26 flex items-center justify-center">
+    return (
+        <>
+            <section id="home" className="relative z-10 overflow-hidden">
+                {/* Abyssal Glass Aurora Blobs */}
+                <div className="absolute inset-0 pointer-events-none -z-10">
+                    <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-[5000ms]" />
+                    <div className="absolute top-[30%] right-[-10%] w-[40%] h-[60%] bg-secondary/20 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-[7000ms]" />
+                    <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] bg-primary/10 blur-[150px] rounded-full mix-blend-screen animate-pulse duration-[6000ms]" />
+                </div>
+                
+                <div className="max-w-6xl mx-auto px-4 min-h-screen max-md:w-screen max-md:overflow-hidden pt-32 md:pt-26 flex items-center justify-center relative">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
             <div className="text-left">
               <motion.a
@@ -61,7 +68,7 @@ export default function Hero() {
               </motion.a>
 
               <motion.h1
-                className="text-4xl md:text-5xl font-bold leading-tight mb-6 max-w-xl"
+                className="text-5xl md:text-7xl font-bold leading-[1.1] mb-6 max-w-xl tracking-tight"
                 initial={{ y: 60, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
@@ -73,7 +80,7 @@ export default function Hero() {
                   delay: 0.1,
                 }}>
                 Create viral ADs <br />
-                <span className="bg-clip-text text-transparent bg-linear-to-r from-indigo-300 to-indigo-400">
+                <span className="bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary drop-shadow-[0_0_15px_rgba(236,72,153,0.3)]">
                   in seconds
                 </span>
               </motion.h1>
@@ -121,9 +128,9 @@ export default function Hero() {
 
             {/* Right: modern mockup card */}
             <motion.div
-              className="mx-auto w-full max-w-lg"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
+              className="mx-auto w-full max-w-lg relative"
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{
                 type: "spring",
@@ -132,8 +139,9 @@ export default function Hero() {
                 mass: 1,
                 delay: 0.5,
               }}>
-              <motion.div className="rounded-3xl overflow-hidden border border-white/6 shadow-2xl bg-linear-to-b from-black/50 to-transparent">
-                <div className="relative aspect-16/10 bg-gray-900">
+              <div className="absolute -inset-1 bg-gradient-to-tr from-primary/30 to-secondary/30 rounded-3xl blur-xl opacity-50 -z-10" />
+              <motion.div className="rounded-3xl overflow-hidden glass-panel relative">
+                <div className="relative aspect-16/10 bg-black/40">
                   <img
                     src={mainImageUrl}
                     alt="agency-work-preview"

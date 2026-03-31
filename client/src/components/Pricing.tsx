@@ -1,22 +1,9 @@
-import { Check } from "lucide-react";
-import { PrimaryButton, GhostButton } from "./Buttons";
 import Title from "./Title";
-import { plansData } from "../assets/dummy-data";
-import { motion } from "framer-motion";
-import { useRef } from "react";
 import { usePlans } from "@clerk/react/experimental";
 import { PricingTable } from "@clerk/react";
 
 export default function Pricing() {
-  const refs = useRef<(HTMLDivElement | null)[]>([]);
-  const {
-    data,
-    isLoading,
-    hasNextPage,
-    fetchNext,
-    hasPreviousPage,
-    fetchPrevious,
-  } = usePlans({
+  const { isLoading } = usePlans({
     for: "user",
     pageSize: 10,
   });
@@ -24,12 +11,17 @@ export default function Pricing() {
     return <div>Loading plans...</div>;
   }
   return (
-    <section id="pricing" className="py-20 bg-white/3 border-t border-white/6">
-      <div className="max-w-6xl mx-auto px-4">
+    <section id="pricing" className="py-20 relative overflow-hidden">
+      {/* Abyssal Glass Background */}
+      <div className="absolute inset-0 pointer-events-none -z-10 flex justify-center mt-20">
+          <div className="w-[800px] h-[500px] bg-primary/20 blur-[150px] rounded-full mix-blend-screen animate-pulse duration-[8000ms]" />
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 relative z-10">
         <Title
           title="Pricing"
-          heading="Pricing Plans"
-          description="Our Pricing Plans are simple, transparent and flexible. Choose the plan that best suits your needs."
+          heading="Transparent Growth"
+          description="Straightforward pricing designed to scale with your content needs. No hidden fees."
         />
 
         <div className="flex flex-wrap items-center justify-center max-w-5xl mx-auto"> 
@@ -96,17 +88,19 @@ export default function Pricing() {
           ))} */}
           <PricingTable appearance={{
                     variables: {
-                        colorBackground: 'none'
+                        colorBackground: 'transparent',
+                        colorPrimary: '#ec4899',
                     },
                     elements: {
-                        pricingTableCardBody: 'bg-white/6',
-                        pricingTableCardHeader: 'bg-white/10',
-                        switchThumb: 'bg-white'
+                        rootBox: "glass-panel rounded-3xl p-1",
+                        pricingTableCard: "glass-panel bg-white/5 border border-white/10 transition-all hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]",
+                        pricingTableCardBody: 'bg-transparent',
+                        pricingTableCardHeader: 'bg-gradient-to-br from-white/10 to-transparent border-b border-white/10',
+                        switchThumb: 'bg-primary'
                     }
                    }}/>
         </div>
       </div>
-      
     </section>
     
   );
